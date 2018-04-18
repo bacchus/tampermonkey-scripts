@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    var RATE_OPTIONS = ["1", "1.25", "1.5", "2", "3"]; // max: 16
+    var RATE_OPTIONS = ["1", "1.5", "2", "2.5", "3"]; // max: 16
     var RETRY_DELAY_IN_MS = 100;
 
     /* Performs multiple retries of a function call until it either succeeds or has failed all attempts. */
