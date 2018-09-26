@@ -8,6 +8,7 @@
 // @run-at       document-idle
 // @grant        none
 //
+// homepage: https://greasyfork.org/en/scripts/22210-facebook-unsponsored
 // Thanks to: enm, Mathieu
 // bacchus: only en, add video block
 // ==/UserScript==
