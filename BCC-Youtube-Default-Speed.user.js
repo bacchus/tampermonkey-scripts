@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        BCC-Youtube-Default-Speed
 // @namespace   youtubedefaultspeed
-// @version     1.1.1.2
+// @version     1.1.1.3
 // @author      splttingatms
 // @description Set a default playback rate for YouTube videos.
 // @match       http*://*.youtube.com/*
