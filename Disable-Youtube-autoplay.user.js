@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Disable-Youtube-autoplay
-// @version      1.1
+// @version      1.1.1.2
 // @description  This script turns off Youtube's newest autoplay feature after the page loads
 // @author       Jeff Bellucci
 // @match        *://www.youtube.com/*
@@ -18,7 +18,7 @@
     }
 
     function disableAfterLoad() {
-        var autoplayToggle = document.getElementById('toggle');
+        var autoplayToggle = document.getElementById('improved-toggle');
         if (autoplayToggle) {
             uncheck(autoplayToggle);
         } else {
