@@ -23,7 +23,8 @@
         'selector': [
             '.fbUserPost span > div > a:not([title]):not([role]):not(.UFICommentActorName):not(.uiLinkSubtle):not(.profileLink)',
             '.fbUserStory span > div > a:not([title]):not([role]):not(.UFICommentActorName):not(.uiLinkSubtle):not(.profileLink)',
-            '.fbUserContent span > div > a:not([title]):not([role]):not(.UFICommentActorName):not(.uiLinkSubtle):not(.profileLink)'
+            '.fbUserContent span > div > a:not([title]):not([role]):not(.UFICommentActorName):not(.uiLinkSubtle):not(.profileLink)',
+            'div[id*="feed_subtitle"]'
         ],
         'content': {
             'en':      ['Sponsored', 'Chartered']
