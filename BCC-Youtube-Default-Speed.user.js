@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        BCC-Youtube-Default-Speed
 // @namespace   youtubedefaultspeed
-// @version     1.1.1.3
+// @version     1.1.1.4
 // @author      splttingatms
 // @description Set a default playback rate for YouTube videos.
 // @match       http*://*.youtube.com/*
@@ -136,8 +136,8 @@
     }
 
     function main() {
-        setPlaybackRateToPreference();
         injectButtons();
+        setPlaybackRateToPreference();
 
         // YouTube uses AJAX so monitor element for video changes
         getElement("video", function (video) {
