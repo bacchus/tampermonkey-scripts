@@ -40,6 +40,14 @@
             'en':        ['Suggested Post', 'Recommended fer ye eye', 'Recommended for you']
         }
     }, {
+        // Bcc
+        'selector': [
+            'span[class^="o_y8_ebt"]',
+        ],
+        'content': {
+            'en': ['red']
+        }
+    }, {
         // Popular Live Video                                                      // A Video You May Like
         'selector': [
             '.fbUserPost div > div > div:not(.userContent)',
@@ -54,7 +62,7 @@
             return (node.children && node.children.length);
         },
         'content': {
-            'en':        ['Popular Live Video',                                    'A Video You May Like']
+            'en':        ['Popular Live Video', 'A Video You May Like']
         }
     }, {
       // Popular Across Facebook
@@ -64,7 +72,7 @@
             '.fbUserContent > div > div > div'
         ],
         'content': {
-            'en':        ['Popular Across Facebook']
+            'en':        ['Popular Across Facebook', 'Recommended Event']
         }
     }, {
         // Page Stories You May Like
@@ -139,6 +147,8 @@
                             }
 
                             if(nodeContent.trim() == searchedNodes[typeIterator].content[targetIterator]) {
+                                //var author = story.querySelectorAll(".profileLink").innerText;
+                                //console.log("block", author); // undefined
                                 return true;
                             }
                         }
