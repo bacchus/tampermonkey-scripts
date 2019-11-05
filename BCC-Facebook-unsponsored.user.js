@@ -1,196 +1,80 @@
 // ==UserScript==
-// @name         BCC-Facebook-unsponsored
-// @namespace    http://tampermonkey.net/
-// @version      1.12.3.2
-// @description  Block Facebook news feed "sponsored" posts
-// @author       solskido
+// @name         Hide Ads on Facebook
+// @namespace    https://tampermonkey.net/
+// @version      1.25
+// @description  Hide sponsored feeds on Facebook
+// @author       KudoAmine
 // @match        https://www.facebook.com/*
-// @run-at       document-idle
+// @license MIT
 // @grant        none
-//
-// homepage: https://greasyfork.org/en/scripts/22210-facebook-unsponsored
-// Thanks to: enm, Mathieu
-// bacchus: only en, add video block
+// https://greasyfork.org/en/scripts/377350-hide-ads-on-facebook
+// bacchus: hide Suggested
 // ==/UserScript==
 
-(function() {
-    'use strict';
-    // Selectors
-    var streamSelector = 'div[id^="topnews_main_stream"]';
-    var storySelector = 'div[id^="hyperfeed_story_id"]';
-    var searchedNodes = [{
-        // Sponsored
-        'selector': [
-            '.fbUserPost span > div > a:not([title]):not([role]):not(.UFICommentActorName):not(.uiLinkSubtle):not(.profileLink)',
-            '.fbUserStory span > div > a:not([title]):not([role]):not(.UFICommentActorName):not(.uiLinkSubtle):not(.profileLink)',
-            '.fbUserContent span > div > a:not([title]):not([role]):not(.UFICommentActorName):not(.uiLinkSubtle):not(.profileLink)',
-            'div[id*="feed_subtitle"]'
-        ],
-        'content': {
-            'en':      ['Sponsored', 'Chartered']
-        }
-    }, {
-        // Suggested Post
-        'selector': [
-            '.fbUserPost div > div > span > span',
-            '.fbUserStory div > div > span > span',
-            '.fbUserContent div > div > span > span'
-        ],
-        'content': {
-            'en':        ['Suggested Post', 'Recommended fer ye eye', 'Recommended for you']
-        }
-    }, {
-        // Bcc
-        'selector': [
-            'span[class^="o_y8_ebt"]',
-        ],
-        'content': {
-            'en': ['red']
-        }
-    }, {
-        // Popular Live Video                                                      // A Video You May Like
-        'selector': [
-            '.fbUserPost div > div > div:not(.userContent)',
-            '.fbUserStory div > div > div:not(.userContent)',
-            '.fbUserContent div > div > div:not(.userContent)'
-        ],
-        'exclude': function(node) {
-            if(!node) {
-                return true;
-            }
+const HideAds = () => {
+try {
+    const feeds = document.getElementById('contentArea').querySelectorAll('[id*=story]');
+    feeds.forEach(feed => {
+        if (feed.style.display != "none") {
+            try {
+                const feedtype = feed.querySelector('[data-testid*="story"]').children[0];
 
-            return (node.children && node.children.length);
-        },
-        'content': {
-            'en':        ['Popular Live Video', 'A Video You May Like']
-        }
-    }, {
-      // Popular Across Facebook
-        'selector': [
-            '.fbUserPost > div > div > div',
-            '.fbUserStory > div > div > div',
-            '.fbUserContent > div > div > div'
-        ],
-        'content': {
-            'en':        ['Popular Across Facebook', 'Recommended Event']
-        }
-    }, {
-        // Page Stories You May Like
-        'selector': [
-            'div[title="Page Stories You May Like"] > div > div > div > div'
-        ],
-        'content': {
-            'en':        ['Page Stories You May Like']
-        }
-    }, {
-        // Video
-        'selector': [
-            '.fbUserStory > div > div > div > div > div > div > div > div > div > h5 > span > span > a',
-            'div > div > div > div > div > div > div > div > div > div > h5 > span > span > a',
-            'div > div > div > div > div > div > div > div > div > div > div > h5 > span > span > a',
-            'div > div > div > div > div > div > div > div > div > div > div > div > h5 > span > span > a'
-        ],
-        'content': {
-            'en':        ['video', 'a photo and a video', 'post']
-        }
-    }];
+                try {
+                    if (feedtype.getAttribute("class").indexOf(" ")!=-1) {
+                        feed.style.display = "none";
+                        // feed.setAttribute("Hideads", "hiddenfeedtype");
+                    }
+                } catch (e) {}
 
-    var language = document.documentElement.lang;
-    var nodeContentKey = (('innerText' in document.documentElement) ? 'innerText' : 'textContent');
-    var mutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+                try {
+                    var sugest = feed.querySelector('[class*="userContentWrapper"]').children[0].children[0].children[0].textContent;
+                    if ((sugest != null) && (sugest != "") && (sugest.indexOf("Suggested") != -1)) {
+                        //console.log(sugest);
+                        feed.style.display = "none";
+                    }
+                } catch (e) {}
 
-    // Default to 'en' when the current language isn't yet supported
-    var i;
-    for(i = 0; i < searchedNodes.length; i++) {
-        if(searchedNodes[i].content[language]) {
-            searchedNodes[i].content = searchedNodes[i].content[language];
-        }
-        else {
-            searchedNodes[i].content = searchedNodes[i].content.en;
-        }
-    }
-
-    var body;
-    var stream;
-    var observer;
-
-    function block(story) {
-        if(!story) {
-            return;
-        }
-
-        story.remove();
-    }
-
-    function isSponsored(story) {
-        if(!story) {
-            return false;
-        }
-
-        var nodes;
-        var nodeContent;
-
-        var typeIterator;
-        var selectorIterator;
-        var nodeIterator;
-        var targetIterator;
-        for(typeIterator = 0; typeIterator < searchedNodes.length; typeIterator++) {
-            for(selectorIterator = 0; selectorIterator < searchedNodes[typeIterator].selector.length; selectorIterator++) {
-                nodes = story.querySelectorAll(searchedNodes[typeIterator].selector[selectorIterator]);
-                for(nodeIterator = 0; nodeIterator < nodes.length; nodeIterator++) {
-                    nodeContent = nodes[nodeIterator][nodeContentKey];
-                    if(nodeContent) {
-                        for(targetIterator = 0; targetIterator < searchedNodes[typeIterator].content.length; targetIterator++) {
-                            if(searchedNodes[typeIterator].exclude && searchedNodes[typeIterator].exclude(nodes[nodeIterator])) {
-                                //console.log("skip", story);
-                                continue;
-                            }
-
-                            if(nodeContent.trim() == searchedNodes[typeIterator].content[targetIterator]) {
-                                //var author = story.querySelectorAll(".profileLink").innerText;
-                                //console.log("block", author); // undefined
-                                return true;
-                            }
+                try {
+                    var texthere="";
+                    var alleles = feedtype.querySelector('[id*="_"]').children[0];
+                    for (var k=0; k<alleles.childElementCount; k++) {
+                        if (getComputedStyle(alleles.children[k].children[0], null).display=="inline") {
+                            texthere=texthere+alleles.children[k].children[0].getAttribute("data-content");
                         }
                     }
-                }
+                    //console.log(texthere);
+                    if ((texthere.indexOf("Sponsor") != -1) || (texthere.indexOf("مُم") != -1) || (texthere.indexOf("Publicidad") != -1) || (texthere.indexOf("Gesponsert") != -1) || (texthere.indexOf("zato") != -1) || (texthere.indexOf("cinP") != -1) || (texthere.indexOf("Patrocinado") != -1) || (texthere.indexOf("Được tài trợ") != -1) || (texthere.indexOf("Реклама") != -1) || (texthere.indexOf("赞助内容") != -1) || (texthere.indexOf("贊助") != -1) || (texthere.indexOf("Sponsrad") != -1) || (texthere.indexOf("Hirdet") != -1) ) {
+                        feed.style.display = "none";
+                        // feed.setAttribute("Hideads", "hiddenfeedtype");
+                    }
+                } catch (e) {}
+            } catch (e) {}
+        }
+
+        try {
+            const sponsoredlink = feed.querySelector('[class="uiStreamSponsoredLink"]');
+            if (sponsoredlink != undefined) {
+                feed.style.display = "none";
+                // feed.setAttribute("Hideads", "hiddensponsoredlink");
             }
-        }
+        } catch (e) {}
 
-        return false;
-    }
-
-    function process() {
-        // Locate the stream every iteration to allow for FB SPA navigation which
-        // replaces the stream element
-        stream = document.querySelector(streamSelector);
-        if(!stream) {
-            return;
-        }
-
-        var stories = stream.querySelectorAll(storySelector);
-        if(!stories.length) {
-            return;
-        }
-
-        var i;
-        for(i = 0; i < stories.length; i++) {
-            if(isSponsored(stories[i])) {
-                block(stories[i]);
+        try {
+            if (feed.innerHTML.indexOf("/ads/about?") != -1) {
+                feed.style.display = "none";
             }
-        }
-    }
+        } catch (e) {}
 
-    if(mutationObserver) {
-        body = document.querySelector('body');
-        if(!body) {
-            return;
-        }
+    });
+} catch (e) {}
+}
 
-        observer = new mutationObserver(process);
-        observer.observe(body, {
-            'childList': true,
-            'subtree': true
-        });
-    }
+HideAds()
+setTimeout(HideAds, 1000);
+(function () {
+    window.addEventListener('scroll', () => {
+    HideAds()
+    setTimeout(HideAds, 1000);
+});
+
 })();
