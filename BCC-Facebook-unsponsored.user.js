@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Hide Ads on Facebook
+// @name         BCC Hide Ads on Facebook
 // @namespace    https://tampermonkey.net/
 // @version      1.25
 // @description  Hide sponsored feeds on Facebook
